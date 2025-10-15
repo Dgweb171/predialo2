@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MANUTENÇÃO PREDIAL</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+  :root{
+    --brand:#ffcc00;--dark:#111;--muted:#666;--bg:#f5f5f5;--card:#fff;
+    --sidebar-w:260px;
+  }
+  body{background:var(--bg);color:var(--dark);min-height:100vh;display:flex;flex-direction:column}
+
+  /* engrenagens fundo login */
+  .engrenagens-bg{position:absolute;inset:0;overflow:hidden;z-index:0}
+  .gear{position:absolute;border:6px solid var(--brand);border-radius:50%;background:#fff;box-shadow:inset 0 0 6px rgba(0,0,0,.15);opacity:.9;animation:spin 10s linear infinite}
+  .gear::before,.gear::after{content:"";position:absolute;border-radius:50%;border:3px solid var(--brand)}
+  .gear::before{top:-6px;left:50%;width:12px;height:12px;background:var(--brand);transform:translateX(-50%)}
+  .gear::after{inset:10%;border:2px dashed var(--brand)}
+  .g1{width:140px;height:140px;top:12%;left:6%;animation-duration:16s}
+  .g2{width:100px;height:100px;top:22%;right:8%;animation-duration:12s}
+  .g3{width:80px;height:80px;bottom:18%;right:18%;animation-duration:9s}
+  .g4{width:60px;height:60px;top:60%;left:38%;animation-duration:6s}
+  .g5{width:110px;height:110px;bottom:6%;left:8%;animation-duration:14s}
+  .g6{width:50px;height:50px;top:8%;right:28%;animation-duration:8.5s}
+  .g7{width:90px;height:90px;top:45%;left:72%;animation-duration:13s}
+
+  /* segunda camada de engrenagens animadas */
+  .gear-bg2{position:absolute;border:3px solid rgba(255,204,0,.6);border-radius:50%;background:rgba(255,255,255,.4);box-shadow:inset 0 0 4px rgba(0,0,0,.1);animation:spinReverse 12s linear infinite;opacity:.5;z-index:-1}
+  .gb1{width:180px;height:180px;top:10%;left:60%;animation-duration:22s}
+  .gb2{width:120px;height:120px;bottom:14%;right:50%;animation-duration:18s}
+  .gb3{width:90px;height:90px;top:70%;left:20%;animation-duration:16s}
+  .gb4{width:70px;height:70px;bottom:10%;right:10%;animation-duration:20s}
+  .gb5{width:150px;height:150px;top:40%;left:10%;animation-duration:24s}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes spinReverse{from{transform:rotate(360deg)}to{transform:rotate(0)}}
+
+  /* loader */
+  #loader{position:fixed;inset:0;background:var(--brand);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
+  .spinner{width:60px;height:60px;border:6px solid #000;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite}
+
+  /* layout */
+  .app{display:flex;min-height:100vh;z-index:1}
+  .sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--card);box-shadow:2px 0 10px rgba(0,0,0,.05);
+    padding:18px 14px;display:flex;flex-direction:column;gap:12px;position:fixed;left:0;top:0;bottom:0;z-index:50;}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 4px}
+  .brand .logo{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;background:var(--brand);font-weight:700;color:#000}
+  .brand h3{font-size:1.05rem;color:var(--dark)}
+  nav{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+  .nav-btn{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:var(--dark);cursor:pointer;border:none;background:transparent;font-size:0.98rem;transition:all .15s}
+  .nav-btn:hover{background:rgba(0,0,0,.04)}
+  .nav-btn.active{background:linear-gradient(90deg,var(--brand),#f3db6a);box-shadow:inset 0 -2px 0 rgba(0,0,0,.03)}
+  .nav-bottom{margin-top:auto}
+  .toggle-sidebar{display:none;position:fixed;left:10px;top:10px;z-index:120;background:var(--brand);border-radius:8px;padding:8px;border:none;box-shadow:0 6px 14px rgba(0,0,0,.12)}
+
+  .content{margin-left:var(--sidebar-w);flex:1;padding:18px 20px 40px;transition:.2s}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .topbar h2{font-size:1.1rem}
+  .card{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.03)}
+  .panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .panel-item{padding:14px;border-radius:8px;background:#fff;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+  .panel-item h3{font-size:.95rem;margin-bottom:6px}
+  .muted{color:var(--muted);font-size:.95rem}
+
+  .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .form-grid input,.form-grid textarea,.form-grid button{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc}
+  textarea{min-height:90px;resize:vertical}
+  .list-grid{display:grid;gap:10px;margin-top:10px}
+  .card-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .card-row .meta{font-size:.9rem;color:var(--muted)}
+  .filters{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .filters input,.filters select{padding:10px;border-radius:8px;border:1px solid #ccc;min-width:0}
+
+  @media (max-width:900px){
+    :root{--sidebar-w:220px}
+    .panel-grid{grid-template-columns:repeat(2,1fr)}
+    .form-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:700px){
+    .sidebar{position:fixed;transform:translateX(-110%);transition:transform .28s;box-shadow:10px 0 30px rgba(0,0,0,.12)}
+    .sidebar.open{transform:translateX(0)}
+    .content{margin-left:0;padding:14px 12px 30px}
+    .toggle-sidebar{display:block}
+    .panel-grid{grid-template-columns:1fr}
+    .form-grid{grid-template-columns:1fr}
+  }
+
+  .btn{background:var(--brand);color:#000;padding:9px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+  .btn.ghost{background:transparent;border:1px solid #ddd}
+  .hidden{display:none}
+  .small{font-size:.9rem;color:var(--muted)}
+  #listaOS{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+  .os-card{background:var(--card);border:1px solid var(--brand);border-radius:10px;padding:12px;box-shadow:0 6px 14px rgba(0,0,0,.04)}
+  .os-card.concluida{opacity:.65;text-decoration:line-through}
+
+  /* LOGIN SCREEN */
+  #login-wrapper{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:2000;}
+  #login-card{width:90%;max-width:400px;background:#fff;border-radius:18px;padding:32px 28px;box-shadow:0 8px 30px rgba(0,0,0,.15);position:relative;z-index:10;text-align:center;}
+  #login-card input{padding:12px;border:1px solid #aaa;border-radius:8px;font-size:1rem;width:100%;}
+  #login-card button{margin-top:8px;font-size:1rem;padding:12px;background:var(--brand);color:#000;font-weight:600;border:none;border-radius:8px;width:100%;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-wrapper">
+  <div class="engrenagens-bg">
+    <div class="gear g1"></div><div class="gear g2"></div><div class="gear g3"></div>
+    <div class="gear g4"></div><div class="gear g5"></div><div class="gear g6"></div><div class="gear g7"></div>
+
+    <!-- segunda camada de engrenagens translúcidas -->
+    <div class="gear-bg2 gb1"></div>
+    <div class="gear-bg2 gb2"></div>
+    <div class="gear-bg2 gb3"></div>
+    <div class="gear-bg2 gb4"></div>
+    <div class="gear-bg2 gb5"></div>
+  </div>
+  <div id="login-card">
+    <img src="sotreq-logo-png_seeklogo-342536.png" alt="Logo" style="width:150px;margin-bottom:18px" />
+    <h2 style="font-size:1.6rem;font-weight:700;color:#000;margin-bottom:6px;">FixOn</h2>
+    <p id="saudacao" style="color:#555;margin-bottom:18px;"></p>
+    <input id="usuario" placeholder="Usuário" />
+    <input id="senha" type="password" placeholder="Senha" style="margin-top:10px"/>
+    <button onclick="login()">Entrar</button>
+  </div>
+</div>
+
+<!-- LOADER -->
+<div id="loader"><div class="spinner"></div></div>
+
+<!-- APP -->
+<div class="app" id="appRoot" style="display:none;">
+  <button class="toggle-sidebar" id="btnToggle">☰</button>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h3>FIXON</h3>
+        <div class="small">Manutenção Predial</div>
+      </div>
+    </div>
+    <nav>
+      <button class="nav-btn active" data-target="resumo">Resumo</button>
+      <button class="nav-btn" data-target="cadastro">Cadastrar OM</button>
+      <button class="nav-btn" data-target="lista">Lista de OM</button>
+    </nav>
+    <div class="nav-bottom">
+      <button class="nav-btn" id="btnSair">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <h2 id="titleTop">FIXON</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="small" id="usuarioNome"></div>
+        <button class="btn ghost" id="topSair">Sair</button>
+      </div>
+    </div>
+
+    <section id="resumo" class="section card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+        <div>
+          <h3>Resumo</h3>
+          <div class="small">Visão geral rápida das ordens</div>
+        </div>
+        <button class="btn" onclick="carregarOS()">Atualizar</button>
+      </div>
+      <div class="panel-grid" style="margin-top:12px">
+        <div class="panel-item">
+          <h3>Ordens Abertas</h3>
+          <div style="font-size:1.5rem;font-weight:700" id="totalAbertas">0</div>
+          <div class="muted">Ordens ainda em andamento</div>
+        </div>
+        <div class="panel-item">
+          <h3>Manutenções Concluídas</h3>
+          <div style="font-size:1.5rem;font-weight:700" id="totalConcluidas">0</div>
+          <div class="muted">Serviços finalizados</div>
+        </div>
+        <div class="panel-item">
+          <h3>Total de Ordens</h3>
+          <div style="font-size:1.5rem;font-weight:700" id="totalOS">0</div>
+          <div class="muted">Volume total cadastrado</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cadastro" class="section card hidden" style="margin-top:12px">
+      <h3>Cadastrar Ordem de Manutenção</h3>
+      <div class="form-grid" style="margin-top:12px">
+        <input id="equipamento" placeholder="Equipamento" />
+        <input id="local" placeholder="Localização" />
+        <input id="responsavel" placeholder="Responsável" />
+        <textarea id="descricao" placeholder="Descrição do problema"></textarea>
+        <div style="grid-column:1/-1;text-align:right">
+          <button class="btn" onclick="criarOS()">Cadastrar OM</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="lista" class="section card hidden" style="margin-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <h3>Lista de Ordens</h3>
+          <div class="small">Filtre, pesquise e gerencie ordens</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="filtro" onchange="carregarOS()">
+            <option value="todas">Todas</option>
+            <option value="aberta">Abertas</option>
+            <option value="concluida">Concluídas</option>
+          </select>
+          <input id="busca" placeholder="Buscar..." oninput="carregarOS()" />
+        </div>
+      </div>
+      <div id="listaOS" class="list-grid"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+const loginWrapper=document.getElementById('login-wrapper'),
+      appRoot=document.getElementById('appRoot'),
+      usuarioNome=document.getElementById('usuarioNome');
+
+const usuariosValidos = {
+  'manutencaopredial@sotreq.com.br':'predial2025@',
+};
+
+function saudacaoDinamica(){
+  const s=document.getElementById('saudacao'),
+        h=new Date().getHours();
+  s.textContent=(h>=5&&h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')+', seja bem-vindo! Tudo bem? Para continuar, é necessário fazer login .';
+}
+saudacaoDinamica();
+
+function login(){
+  const u=document.getElementById('usuario').value.trim(),
+        p=document.getElementById('senha').value.trim();
+
+  if(!u||!p){
+    alert('Preencha usuário e senha!');
+    return;
+  }
+
+  if(usuariosValidos[u] && usuariosValidos[u] === p){
+    localStorage.setItem('usuario',u);
+    usuarioNome.textContent=u;
+    loginWrapper.style.display='none';
+    appRoot.style.display='flex';
+  }else{
+    alert('Usuário ou senha incorretos!');
+  }
+}
+
+function sair(){
+  localStorage.removeItem('usuario');
+  usuarioNome.textContent='';
+  appRoot.style.display='none';
+  loginWrapper.style.display='flex';
+}
+
+document.getElementById('topSair').onclick=sair;
+document.getElementById('btnSair').onclick=sair;
+
+if(localStorage.getItem('usuario')){
+  usuarioNome.textContent=localStorage.getItem('usuario');
+  loginWrapper.style.display='none';
+  appRoot.style.display='flex';
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.section').forEach(sec=>sec.classList.add('hidden'));
+    document.getElementById(btn.dataset.target).classList.remove('hidden');
+  });
+});
+
+let OS=[]
+function criarOS(){
+  const eq=document.getElementById('equipamento').value.trim(),
+        loc=document.getElementById('local').value.trim(),
+        resp=document.getElementById('responsavel').value.trim(),
+        desc=document.getElementById('descricao').value.trim();
+  if(!eq||!loc||!resp||!desc)return alert('Preencha todos os campos');
+
+  OS.push({id:Date.now(),equipamento:eq,local:loc,responsavel:resp,descricao:desc,status:'aberta',data:new Date().toLocaleString()});
+  salvarOS();carregarOS();limparForm();alert('OS cadastrada com sucesso!');
+}
+
+function limparForm(){
+  ['equipamento','local','responsavel','descricao'].forEach(id=>document.getElementById(id).value='')
+}
+
+function salvarOS(){localStorage.setItem('osData',JSON.stringify(OS));}
+function carregarOS(){
+  OS=JSON.parse(localStorage.getItem('osData')||'[]');
+  const filtro=document.getElementById('filtro').value, busca=document.getElementById('busca').value.toLowerCase(),
+        cont=document.getElementById('listaOS'); cont.innerHTML='';
+  let lista=OS;
+  if(filtro!=='todas')lista=lista.filter(o=>o.status===filtro);
+  if(busca)lista=lista.filter(o=>Object.values(o).some(v=>String(v).toLowerCase().includes(busca)));
+
+  lista.forEach(o=>{
+    const d=document.createElement('div');
+    d.className='os-card '+(o.status==='concluida'?'concluida':'');
+    d.innerHTML=`
+      <div class="card-row">
+        <strong>${o.equipamento}</strong>
+        <span class="meta">${o.status}</span>
+      </div>
+      <div class="muted">${o.local} | ${o.responsavel}</div>
+      <div class="muted">${o.data}</div>
+      <p style="margin-top:6px">${o.descricao}</p>
+      <div style="margin-top:8px;text-align:right">
+        ${o.status==='aberta'?`<button class="btn small" onclick="finalizarOS(${o.id})">Concluir</button>`:''}
+        <button class="btn ghost small" onclick="excluirOS(${o.id})">Excluir</button>
+      </div>`;
+    cont.appendChild(d);
+  });
+  atualizarResumo();
+}
+
+function finalizarOS(id){OS=OS.map(o=>o.id===id?{...o,status:'concluida'}:o);salvarOS();carregarOS();}
+function excluirOS(id){if(confirm('Deseja realmente excluir?')){OS=OS.filter(o=>o.id!==id);salvarOS();carregarOS();}}
+
+function atualizarResumo(){
+  const total=OS.length,
+        concluidas=OS.filter(o=>o.status==='concluida').length,
+        abertas=total-concluidas;
+  document.getElementById('totalOS').textContent=total;
+  document.getElementById('totalConcluidas').textContent=concluidas;
+  document.getElementById('totalAbertas').textContent=abertas;
+}
+
+window.addEventListener('load',()=>{
+  setTimeout(()=>{document.getElementById('loader').style.opacity='0';setTimeout(()=>document.getElementById('loader').style.display='none',500)},600);
+  carregarOS();
+});
+
+const sidebar=document.getElementById('sidebar');
+document.getElementById('btnToggle').onclick=()=>sidebar.classList.toggle('open');
+</script>
+</body>
+</html>
